@@ -1,12 +1,48 @@
 import { Room, Client } from "colyseus";
+import uuid from "uuid4"
+
+const Context = require('../Context')
+const Users = new Context('./data/users.json')
 
 
 function validLogin(username='', password='') {
-    return (username === 'test') && (password === 'pass')
+    let result,thisUser
+
+    try {
+        thisUser = Users[username]
+        console.log('existing user', username)
+        result = thisUser.password === password
+        console.log('valid login')
+    } catch (error) {
+        Users[username] = {
+            password: 'new',
+            token: uuid(),
+        }
+        console.log('new user', username)
+        result = false
+    }
+
+    return result
 }
 
 function validToken(token='',username='') {
-    return (username === 'test') && (token === '1234')
+    let result,thisUser
+
+    try {
+        thisUser = Users[username]
+        console.log('existing user', username)
+        result = thisUser.token === token
+        console.log('valid token')
+    } catch (error) {
+        Users[username] = {
+            password: 'new',
+            token: uuid(),
+        }
+        console.log('new user', username)
+        result = false
+    }
+
+    return result
 }
 
 
@@ -23,28 +59,36 @@ export class AuthRoom extends Room {
         console.log('auth.client', client.id)
         console.log('auth.options', options)
 
-        const {accessToken,password,username} = options
+        const {token,password,username} = options
 
-        if (validToken(accessToken,username)) {
-            return true
+        if (validToken(token,username)) {
+            return username
         } else if (validLogin(username,password)) {
+            const newToken = uuid()
+            Users[username].token = newToken
+
             return true
         } else {
+
             return false
         }
     }
 
     onJoin (client: Client, options: any, auth: any) {
-        console.log(client.sessionId, "joined successfully");
-        console.log("Auth data: ", auth);
+        console.log("successful join");
+        console.log(client.id)
+        console.log(client.sessionId)
+        console.log(client.auth)
+        console.log(options)
+        console.log(auth)
     }
 
     onLeave (client: Client) {
-        console.log(client.sessionId, "left");
+        console.log('client leaving')
+        console.log(client);
     }
 
     onDispose () {
         console.log("Dispose AuthRoom");
     }
-
 }

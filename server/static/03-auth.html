@@ -63,7 +63,7 @@
               if (response.status === 'connected') {
                   // Logged into your app and Facebook.
                   client.joinOrCreate("auth", {
-                      accessToken: response.authResponse.accessToken
+                      token: response.authResponse.token
                   }).then(room => {
                       console.log("Joined successfully!");
                   }).catch(e => {

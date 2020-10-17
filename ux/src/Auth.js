@@ -3,15 +3,14 @@ import * as Colyseus from 'colyseus.js'
 
 function Auth() {
   const client = useRef(null)
+  const url = useRef('ws://localhost:2567')
 
   const [password, setPassword] = useState('')
   const [token, setToken] = useState('')
   const [username, setUsername] = useState('')
 
   useEffect(() => {
-    const url = 'ws://localhost:2567'
-
-    client.current = new Colyseus.Client(url);
+    client.current = new Colyseus.Client(url.current);
   }, [])
 
   function join_without_token () {
@@ -26,9 +25,9 @@ function Auth() {
   }
 
   function login() {
-    if (token) {
+    if (token && token.length) {
       client.current.joinOrCreate("auth", {
-        accessToken: token,
+        token: token,
         username: username,
       })
       .then(room => {
@@ -63,14 +62,14 @@ function Auth() {
 
     <input 
       placeholder="username"
-      type="text"
+      type="email"
       value={username}
       onChange={event=>setUsername(event.target.value)}
     />
 
     <input 
       placeholder="password"
-      type="text"
+      type="password"
       value={password}
       onChange={event=>setPassword(event.target.value)}
     />
